@@ -1,0 +1,62 @@
+What is the primary objective of an Identity and Access Management (IAM) framework?,To ensure the right individuals have access to the right resources at the right times for the right reasons.
+How is Identity and Access Governance (IAG) defined?,The policy-based centralised orchestration of user identity management and access control.
+The business process for creating and managing access to resources in an IT system is known as _____.,User account provisioning
+What is the purpose of 'User account de-provisioning'?,Deleting and freeing access to resources in an information technology system.
+Define 'Reconciliation' in the context of IAM.,The process of synchronising accounts between a managed resource and the Identity Manager Server.
+What acronym represents the three main stages of the user lifecycle?,"JML (Joiner, Mover, Leaver)."
+"In the identity lifecycle, what action is typically taken during the 'Exit' phase?",The account is disabled or retired.
+What is the function of 'Lifecycle Event Management'?,Automatically detecting organisational changes and proactively aligning access to the desired state.
+"In IAM, what does a 'Process Assembler' do?",It dynamically generates forms and risk-based workflows to support access request processes.
+What is 'Self-service Profile Management' intended to achieve?,Allowing users to manage their own identity data to increase productivity and decrease helpdesk load.
+Define 'Password Synchronization'.,A process that maintains a single user password across multiple IT systems.
+What is the main benefit of offering Password Self Service functionality?,Increasing user productivity and decreasing the load on the helpdesk.
+Access requests for which a user is already entitled can be provisioned _____ through IdM.,automatically
+"When a user requests an entitlement they are NOT entitled for, what is required before access is granted?",Approval from a manager via a scripted workflow.
+What is 'Birthright Access'?,The default set of permissions automatically granted to a user when they join an organisation based on identity attributes.
+Give an example of Birthright Access for 'All Employees'.,"Email account, intranet access, HR portal, and corporate calendar."
+What specific access might be provisioned as a birthright for the Finance Team?,Financial systems such as SAP and budget reports.
+What does the acronym RBAC stand for?,Role-Based Access Control.
+How does RBAC simplify access management compared to individual assignments?,"Permissions are assigned to roles, and people are then assigned to those roles."
+"If an employee changes roles in an RBAC system, what happens to their access?",Their access updates automatically when their role is changed.
+What is the market share leader for IAM tools in 2025 according to the source?,Microsoft Entra ID (24.11%).
+List the three categories of Multi-Factor Authentication (MFA) factors.,"Knowledge (something you know), Possession (something you have), and Inherence (something you are)."
+MFA Factor: Knowledge,"Definition: Something the user knows, such as a password or a PIN."
+MFA Factor: Possession,"Definition: Something the user has, such as a phone, a security token, or a smart card."
+MFA Factor: Inherence,"Definition: Something the user is, such as a fingerprint or a retina scan."
+What is a 'Directory Service'?,"A data registry used to store network, user, computer, and server-related data in an enterprise architecture."
+What is a 'Directory Information Tree' (DIT)?,"A hierarchical storage structure used by directory services to store descriptive, attribute-based data."
+For what type of operations are Directory Services specifically optimised?,High volume lookup and search operations.
+What protocol is most commonly used for communication with Directory Services?,Lightweight Directory Access Protocol (LDAP).
+How do Directory Services compare to Relational Databases regarding 'Search' performance?,"Directory Services are very fast and reliable for searching, while Databases are slower and more resource-intensive."
+How do Directory Services compare to Relational Databases regarding 'Write' performance?,Directory Services are slightly slower for writing compared to Relational Databases.
+"In LDAP, what serves as the unique identifier similar to a primary key in a database?",Distinguished Name (DN).
+What is 'Inheritance' in the context of Directory Services?,A feature that allows data storage to be extended by inheriting properties from existing object classes.
+What is the current standard version of LDAP used in the industry?,LDAP v3.
+What format is used for the exchange of directory information between servers in LDAP?,LDAP Data Interchange Format (LDIF).
+LDAP Term: Attribute,"Definition: Descriptive information about an entry, such as a User ID (uid) or First Name (givenname)."
+LDAP Term: Object Class,Definition: A collection of attributes or an attribute container.
+LDAP Term: Schema,Definition: The combination of attributes and object classes that forms the Directory Server structure.
+"In LDAP searching, what type of match is used for phonetic matching?",Approximate match.
+Why is 'High Availability' critical for Directory Servers used as backends?,To ensure that directory data is not lost during fail-overs.
+Describe 'Master – Master Replication' for directory servers.,Both directory servers act as masters and receive data simultaneously from the application.
+Describe 'Master – Slave Replication' for directory servers.,"The master server receives data and synchronises it to the slave server, which must be manually promoted if the master fails."
+What is the purpose of a 'Meta Directory Service'?,To aggregate data from multiple data stores and transform it into a required format for a Global Directory Service.
+What is the purpose of a 'Virtual Directory Service'?,To provide an abstract layer of data for specific applications to maintain performance when many applications access a Global Directory Server.
+What are the components of 'Access Governance'?,Monitoring and auditing access to resources.
+"In the Joiner flow, which department usually initiates the 'Onboarding Request'?",HR (Human Resources).
+What is 'Single Sign-On' (SSO)?,A system allowing users to access multiple applications with one set of credentials.
+What does the acronym SAML stand for in the context of SSO?,Security Assertion Markup Language.
+"In an SSO flow, who is the 'Identity Provider' (IdP)?","The entity that authenticates the user and sends an authentication response (e.g., Microsoft Entra ID)."
+"In an SSO flow, what is a 'Service Provider' (SP)?","The application or service the user is trying to access (e.g., ServiceNow or Workday)."
+What is the difference between IdP-initiated and SP-initiated SSO?,"SP-initiated starts at the application, while IdP-initiated starts at the identity provider's portal."
+What is 'Segregation of Duties' (SoD) in IAG?,A control designed to prevent fraud and error by ensuring that no single individual has control over all phases of a business transaction.
+What does 'Access Analytics' provide in an IAG system?,Insights and data patterns related to how access is being utilised within the organisation.
+What is an 'Access Warehouse'?,A central repository that stores all identity and access-related data for governance and reporting.
+Define 'Identity and Access Recertification'.,The periodic process of reviewing and confirming that users still require their assigned access rights.
+What is the 'DIT' component 'Organizational Unit' (OU) used for?,Grouping entries within a directory to reflect the structure of an organisation.
+What is an 'OID' in the context of LDAP schema?,A Unique Identifier used for defining an object class.
+"In LDAP, what is 'Indexing' used for?",Notifying the directory server to prioritise certain attributes to speed up search operations.
+What is the 'Relative Distinguished Name' (RDN)?,"The name of a specific LDAP server entry, which is a substring of the full Distinguished Name."
+Which IAG component ensures that access is only granted if it doesn't violate security policies?,Access Risk Management.
+Name one IAM tool mentioned in the material besides Microsoft or Google.,"Okta (or Saviynt, IBM Security Identity Manager, NetIQ Identity Manager)."
+What is the 'Directory Services Markup Language' (DSML)?,A communication protocol used to access directory services using XML.

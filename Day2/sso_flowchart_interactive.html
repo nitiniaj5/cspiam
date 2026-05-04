@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sso-flowchart-interactive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root,[data-theme="light"]{
+      --text-xs:clamp(.75rem,.7rem + .25vw,.875rem);--text-sm:clamp(.875rem,.8rem + .35vw,1rem);--text-base:clamp(1rem,.95rem + .25vw,1.125rem);--text-lg:clamp(1.125rem,1rem + .75vw,1.5rem);--text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);--text-2xl:clamp(2rem,1.2rem + 2.5vw,3.5rem);
+      --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;
+      --color-bg:#f7f6f2;--color-surface:#f9f8f5;--color-surface-2:#fbfbf9;--color-surface-offset:#f0eee8;--color-border:#d4d1ca;--color-text:#28251d;--color-text-muted:#66655f;--color-primary:#01696f;--color-primary-highlight:#d9ecec;--color-success:#437a22;--color-warning:#da7101;--color-blue:#006494;--color-purple:#7a39bb;--shadow-md:0 8px 28px rgba(0,0,0,.08);--radius-md:.85rem;--radius-lg:1.15rem;--radius-full:999px;--font-body:'Inter',sans-serif;--font-display:'JetBrains Mono',monospace;
+    }
+    [data-theme="dark"]{
+      --color-bg:#0d1117;--color-surface:#111827;--color-surface-2:#17202b;--color-surface-offset:#0f1722;--color-border:#263243;--color-text:#e5eef7;--color-text-muted:#96a3b4;--color-primary:#4f98a3;--color-primary-highlight:#10262a;--color-success:#7fcf53;--color-warning:#ffb24a;--color-blue:#67b4ff;--color-purple:#c08cff;--shadow-md:0 12px 40px rgba(0,0,0,.35);
+    }
+    *,*::before,*::after{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);background:radial-gradient(circle at top right, color-mix(in oklab, var(--color-primary) 18%, transparent), transparent 28%),radial-gradient(circle at bottom left, color-mix(in oklab, var(--color-blue) 14%, transparent), transparent 25%),var(--color-bg);color:var(--color-text);line-height:1.55}
+    .skip{position:absolute;left:-9999px} .skip:focus{left:1rem;top:1rem;z-index:1000;background:var(--color-surface);padding:.75rem 1rem;border-radius:.5rem}
+    .page{max-width:1400px;margin:0 auto;padding:var(--space-6)}
+    header{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-6)}
+    .brand{display:flex;gap:var(--space-3);align-items:center}.logo{width:46px;height:46px;border-radius:14px;border:1px solid var(--color-border);background:linear-gradient(135deg,var(--color-primary-highlight),transparent),var(--color-surface);display:grid;place-items:center;box-shadow:var(--shadow-md)}
+    .logo svg{width:28px;height:28px}.eyebrow{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.18em;color:var(--color-text-muted);margin-bottom:.35rem}.title{font-family:var(--font-display);font-size:var(--text-2xl);line-height:1.05;margin:0 0 .5rem}.lead{max-width:72ch;color:var(--color-text-muted);margin:0}
+    .toolbar{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}.chip,.theme-toggle{border:1px solid var(--color-border);background:color-mix(in oklab,var(--color-surface) 84%, transparent);color:var(--color-text);padding:.7rem .95rem;border-radius:var(--radius-full);font-size:var(--text-sm);backdrop-filter:blur(10px)} .theme-toggle{cursor:pointer}
+    .layout{display:grid;grid-template-columns:1.45fr .9fr;gap:var(--space-6);align-items:start}
+    .panel{background:linear-gradient(180deg,color-mix(in oklab,var(--color-surface) 88%, transparent),color-mix(in oklab,var(--color-surface-2) 92%, transparent));border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}
+    .flow-wrap{padding:var(--space-5);overflow:auto}
+    .flowchart{display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:var(--space-4);align-items:start;min-width:980px;padding-bottom:.5rem}
+    .step{position:relative;padding:var(--space-4);border-radius:var(--radius-lg);background:linear-gradient(180deg,color-mix(in oklab,var(--color-surface-2) 94%, transparent),color-mix(in oklab,var(--color-surface-offset) 90%, transparent));border:1px solid var(--color-border);cursor:pointer;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease;min-height:230px}
+    .step:hover,.step:focus-visible{transform:translateY(-4px);border-color:color-mix(in oklab,var(--color-primary) 45%, var(--color-border));box-shadow:0 12px 28px rgba(0,0,0,.18)}
+    .step.active{background:linear-gradient(180deg,color-mix(in oklab,var(--color-primary-highlight) 72%, var(--color-surface-2)),color-mix(in oklab,var(--color-surface-offset) 85%, transparent));border-color:color-mix(in oklab,var(--color-primary) 55%, var(--color-border));box-shadow:0 0 0 1px color-mix(in oklab,var(--color-primary) 25%, transparent),0 14px 34px rgba(0,0,0,.22)}
+    .step-num{display:inline-grid;place-items:center;width:2rem;height:2rem;border-radius:999px;background:color-mix(in oklab,var(--color-primary) 18%, transparent);color:var(--color-primary);font-family:var(--font-display);font-size:var(--text-sm);margin-bottom:.85rem}
+    .step h2{font-size:var(--text-lg);margin:.15rem 0 .5rem;line-height:1.2}.step p{font-size:var(--text-sm);color:var(--color-text-muted);margin:0 0 .8rem}.meta{display:flex;flex-wrap:wrap;gap:.45rem}.tag{font-size:12px;padding:.32rem .55rem;border-radius:999px;background:color-mix(in oklab,var(--color-primary) 12%, transparent);color:var(--color-text);border:1px solid color-mix(in oklab,var(--color-primary) 20%, var(--color-border))}
+    .arrow{align-self:center;justify-self:center;width:100%;height:6px;position:relative;margin-top:115px}.arrow::before{content:"";position:absolute;left:-4px;right:-4px;top:2px;height:2px;background:linear-gradient(90deg,var(--color-primary),var(--color-blue));opacity:.9}.arrow::after{content:"";position:absolute;right:-3px;top:-2px;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:10px solid var(--color-blue)}
+    .details{padding:var(--space-5);position:sticky;top:1rem}.details h3{font-family:var(--font-display);font-size:var(--text-xl);margin:0 0 .75rem}.detail-card{padding:var(--space-4);border-radius:var(--radius-md);background:color-mix(in oklab,var(--color-surface-offset) 86%, transparent);border:1px solid var(--color-border);margin-bottom:var(--space-4)}
+    .detail-card h4{margin:0 0 .45rem;font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.14em;color:var(--color-text-muted)} .detail-card p,.detail-card li{font-size:var(--text-sm);color:var(--color-text)} .detail-card ul{padding-left:1.1rem;margin:.5rem 0 0}
+    .legend{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-top:var(--space-4)} .legend .detail-card{margin-bottom:0}
+    .badge{display:inline-flex;align-items:center;gap:.45rem;padding:.42rem .68rem;border-radius:999px;background:color-mix(in oklab,var(--color-success) 14%, transparent);color:var(--color-text);border:1px solid color-mix(in oklab,var(--color-success) 18%, var(--color-border));font-size:12px}
+    .mini-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:.5rem;align-items:center}.mini{padding:.8rem;border-radius:.8rem;border:1px solid var(--color-border);background:var(--color-surface-2);font-size:12px;text-align:center}.mini-arrow{color:var(--color-primary);font-weight:800}
+    footer{margin-top:var(--space-6);padding:var(--space-4);color:var(--color-text-muted);font-size:var(--text-sm)}
+    @media (max-width: 1080px){.layout{grid-template-columns:1fr}.details{position:static}.flowchart{grid-template-columns:1fr;min-width:unset}.arrow{height:42px;margin-top:0}.arrow::before{left:50%;right:auto;top:0;bottom:8px;width:2px;height:auto;transform:translateX(-50%);background:linear-gradient(180deg,var(--color-primary),var(--color-blue))}.arrow::after{left:50%;right:auto;top:auto;bottom:0;transform:translateX(-50%) rotate(90deg)}}
+    @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="page">
+    <header>
+      <div>
+        <div class="brand">
+          <div class="logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-label="SSO logo">
+              <rect x="3" y="10" width="6" height="8" rx="2"></rect>
+              <rect x="15" y="10" width="6" height="8" rx="2"></rect>
+              <path d="M9 14h6"></path>
+              <path d="M12 10V6a3 3 0 1 1 6 0v1"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="eyebrow">IAM one-pager</div>
+            <h1 class="title">How SSO works</h1>
+          </div>
+        </div>
+        <p class="lead">Single sign-on works through a trust relationship between an identity provider and an application, so the user authenticates once and the application accepts the signed identity response or token instead of asking for a separate password. In common SAML and OIDC flows, the application redirects the user to the identity provider, the identity provider authenticates the user, and then sends the browser back with a signed assertion or ID token that the application validates before creating a session. [web:50][web:55][web:63]</p>
+      </div>
+      <div class="toolbar">
+        <span class="chip">Interactive flowchart</span>
+        <span class="chip">SP-initiated focus</span>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">◐ Theme</button>
+      </div>
+    </header>
+
+    <main id="main" class="layout">
+      <section class="panel flow-wrap" aria-labelledby="flow-title">
+        <h2 id="flow-title" class="sr-only">SSO flow steps</h2>
+        <div class="flowchart" role="list">
+          <button class="step active" role="listitem" data-step="1">
+            <span class="step-num">1</span>
+            <h2>User opens app</h2>
+            <p>The user tries to open a protected application such as Salesforce, ServiceNow, or an internal portal. In SP-initiated SSO, the flow starts at the service provider. [web:49][web:55]</p>
+            <div class="meta"><span class="tag">User</span><span class="tag">Browser</span><span class="tag">Service Provider</span></div>
+          </button>
+          <div class="arrow" aria-hidden="true"></div>
+          <button class="step" role="listitem" data-step="2">
+            <span class="step-num">2</span>
+            <h2>App redirects to IdP</h2>
+            <p>The application does not authenticate the user itself, so it redirects the browser to the identity provider with an authentication request. [web:49][web:55][web:61]</p>
+            <div class="meta"><span class="tag">Redirect</span><span class="tag">SAML AuthnRequest</span><span class="tag">OIDC Auth Request</span></div>
+          </button>
+          <div class="arrow" aria-hidden="true"></div>
+          <button class="step" role="listitem" data-step="3">
+            <span class="step-num">3</span>
+            <h2>IdP authenticates user</h2>
+            <p>The identity provider checks the user with password, MFA, passkey, smart card, or another configured method. If the user already has an active IdP session, this step may be skipped. [web:52][web:61][web:54]</p>
+            <div class="meta"><span class="tag">IdP</span><span class="tag">MFA</span><span class="tag">Session reuse</span></div>
+          </button>
+          <div class="arrow" aria-hidden="true"></div>
+          <button class="step" role="listitem" data-step="4">
+            <span class="step-num">4</span>
+            <h2>IdP sends signed proof</h2>
+            <p>After successful authentication, the identity provider sends a signed SAML assertion or an OIDC ID token back through the browser so the application can trust the result. [web:50][web:55][web:63]</p>
+            <div class="meta"><span class="tag">Assertion</span><span class="tag">ID token</span><span class="tag">Signed</span></div>
+          </button>
+          <div class="arrow" aria-hidden="true"></div>
+          <button class="step" role="listitem" data-step="5">
+            <span class="step-num">5</span>
+            <h2>App validates and grants access</h2>
+            <p>The application validates trust, checks signature and audience, maps the user, and creates its local session so the user can enter without another password prompt. [web:50][web:55][web:58]</p>
+            <div class="meta"><span class="tag">Trust</span><span class="tag">Authorization</span><span class="tag">Session</span></div>
+          </button>
+        </div>
+      </section>
+
+      <aside class="panel details" aria-live="polite">
+        <h3 id="detailTitle">Step 1 · User opens app</h3>
+        <div class="detail-card">
+          <h4>What happens</h4>
+          <p id="detailBody">The user starts from the application, which is why this is called SP-initiated SSO. The application sees that there is no valid local session and starts federation instead of showing a standalone login page. [web:49][web:55]</p>
+        </div>
+        <div class="detail-card">
+          <h4>Key terms</h4>
+          <p id="detailTerms">Service Provider, Browser, Protected Resource.</p>
+        </div>
+        <div class="detail-card">
+          <h4>Why it matters</h4>
+          <p id="detailWhy">The application delegates authentication to the identity provider so users can sign in once and reuse that trust across multiple apps. [web:50][web:54]</p>
+        </div>
+        <div class="detail-card">
+          <h4>Mini flow</h4>
+          <div class="mini-flow">
+            <div class="mini">User</div><div class="mini-arrow">→</div><div class="mini">Application</div><div class="mini-arrow">→</div><div class="mini">IdP</div>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="detail-card"><span class="badge">SAML</span><ul><li>Often used for enterprise web apps. [web:55]</li><li>Returns a signed assertion. [web:58]</li></ul></div>
+          <div class="detail-card"><span class="badge">OIDC</span><ul><li>Built on OAuth 2.0 for authentication. [web:63]</li><li>Returns an ID token for SSO. [web:57][web:63]</li></ul></div>
+          <div class="detail-card"><span class="badge">Trust</span><ul><li>SP and IdP rely on configured trust and validation. [web:50]</li><li>Certificates or signing keys are central. [web:50]</li></ul></div>
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      SSO depends on a trust relationship between the identity provider and service provider, and both SP-initiated and IdP-initiated flows end with the application accepting a trusted authentication result from the IdP. [web:49][web:50][web:56]
+    </footer>
+  </div>
+
+  <script>
+    const steps = {
+      1: {
+        title: 'Step 1 · User opens app',
+        body: 'The user starts from the application, which is why this is called SP-initiated SSO. The application sees that there is no valid local session and starts federation instead of showing a standalone login page. [web:49][web:55]',
+        terms: 'Service Provider, Browser, Protected Resource.',
+        why: 'The application delegates authentication to the identity provider so users can sign in once and reuse that trust across multiple apps. [web:50][web:54]',
+        flow: ['User','Application','IdP']
+      },
+      2: {
+        title: 'Step 2 · App redirects to IdP',
+        body: 'The service provider redirects the browser to the identity provider and includes an authentication request. In SAML this is commonly an AuthnRequest, while in OIDC the app sends an authorization request. [web:55][web:63]',
+        terms: 'Redirect, SAML AuthnRequest, OIDC Authorization Request.',
+        why: 'This step avoids storing separate passwords inside every application and centralizes authentication control in the IdP. [web:50][web:63]',
+        flow: ['App','Redirect','IdP']
+      },
+      3: {
+        title: 'Step 3 · IdP authenticates user',
+        body: 'The identity provider validates the user with its configured authentication methods. If the user already has a valid session at the IdP, the provider can reuse that session and continue silently. [web:52][web:54][web:61]',
+        terms: 'Identity Provider, MFA, Existing Session, Risk Checks.',
+        why: 'This is the heart of SSO because one central login can be reused across many applications without repeated credential prompts. [web:54][web:60]',
+        flow: ['Browser','IdP login','MFA']
+      },
+      4: {
+        title: 'Step 4 · IdP sends signed proof',
+        body: 'After authentication, the IdP sends a signed response back through the browser. SAML uses a signed assertion, while OIDC typically returns an ID token proving the user identity. [web:55][web:57][web:63]',
+        terms: 'SAML Assertion, OIDC ID Token, Signature, Claims.',
+        why: 'The signature lets the application trust that the authentication result came from the configured identity provider and was not altered. [web:50][web:55]',
+        flow: ['IdP','Signed token','Browser']
+      },
+      5: {
+        title: 'Step 5 · App validates and grants access',
+        body: 'The application validates the response, checks trust settings such as signature and audience, maps the user, and creates a session. The user enters the app without typing a new password. [web:50][web:55][web:58]',
+        terms: 'Audience, Signature Validation, User Mapping, Session Cookie.',
+        why: 'This final step turns federated trust into an actual application session and enforces both authentication trust and local authorization. [web:49][web:58]',
+        flow: ['Browser','Application','Access granted']
+      }
+    };
+
+    const btns = document.querySelectorAll('.step');
+    const title = document.getElementById('detailTitle');
+    const body = document.getElementById('detailBody');
+    const terms = document.getElementById('detailTerms');
+    const why = document.getElementById('detailWhy');
+    const mini = document.querySelector('.mini-flow');
+
+    function setStep(n){
+      btns.forEach(b => b.classList.toggle('active', b.dataset.step == n));
+      const s = steps[n];
+      title.textContent = s.title;
+      body.textContent = s.body.replace(/ \[web:[^\]]+\]/g, '');
+      terms.textContent = s.terms;
+      why.textContent = s.why.replace(/ \[web:[^\]]+\]/g, '');
+      mini.innerHTML = `<div class="mini">${s.flow[0]}</div><div class="mini-arrow">→</div><div class="mini">${s.flow[1]}</div><div class="mini-arrow">→</div><div class="mini">${s.flow[2]}</div>`;
+    }
+    btns.forEach(b => {
+      b.addEventListener('click', () => setStep(b.dataset.step));
+      b.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); setStep(b.dataset.step); } });
+    });
+
+    const toggle = document.querySelector('[data-theme-toggle]');
+    toggle.addEventListener('click', () => {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+</body>
+</html>

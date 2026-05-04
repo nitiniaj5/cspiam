@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SSO in IAM: Terms, Risks, Best Practices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme='light']{
+--bg:#f6f7fb;--panel:#ffffff;--panel2:#f3f6fb;--text:#18212f;--muted:#5d6a7b;--border:#d8e0ea;--accent:#146c94;--accent2:#17a673;--accent3:#d97706;--danger:#dc2626;--shadow:0 12px 30px rgba(20,32,60,.10);--radius:20px;--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif}
+[data-theme='dark']{--bg:#0b1020;--panel:#111a2c;--panel2:#0f1727;--text:#e8eef7;--muted:#91a0b5;--border:#26344a;--accent:#67b7ff;--accent2:#49d18d;--accent3:#ffb84d;--danger:#ff6b6b;--shadow:0 16px 34px rgba(0,0,0,.34)}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top right, rgba(103,183,255,.12), transparent 25%),var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55}
+.page{max-width:1350px;margin:0 auto;padding:24px} header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:22px}.title{font-family:var(--mono);font-size:clamp(2rem,4vw,3.4rem);margin:0}.lead{max-width:70ch;color:var(--muted);margin:8px 0 0} .btn{border:1px solid var(--border);background:var(--panel);color:var(--text);padding:.8rem 1rem;border-radius:999px;cursor:pointer;box-shadow:var(--shadow)}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:20px} .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)} .section{padding:18px} .terms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}.term{padding:14px;border-radius:16px;border:1px solid var(--border);background:rgba(255,255,255,.02);cursor:pointer;transition:.18s}.term:hover,.term.active{transform:translateY(-2px);border-color:color-mix(in oklab,var(--accent) 55%, var(--border));box-shadow:0 8px 20px rgba(0,0,0,.12)} .term h3{margin:0 0 6px;font-size:1rem}.term p{margin:0;color:var(--muted);font-size:.92rem} .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:center;margin-top:14px} .node{padding:12px 10px;border-radius:16px;border:1px solid var(--border);background:var(--panel);text-align:center;font-size:.9rem;min-height:72px;display:grid;place-items:center} .arrow{font-size:1.5rem;color:var(--accent);text-align:center} .panel-title{font-family:var(--mono);font-size:1.3rem;margin:0 0 8px}.small{font-size:.92rem;color:var(--muted)} .tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.tab{padding:.65rem .9rem;border-radius:999px;border:1px solid var(--border);background:var(--panel);cursor:pointer}.tab.active{background:color-mix(in oklab,var(--accent) 15%, var(--panel));border-color:color-mix(in oklab,var(--accent) 50%, var(--border))} .quiz{display:grid;gap:10px}.qa{padding:12px 14px;border-radius:16px;border:1px solid var(--border);background:var(--panel)} .qa b{display:block;margin-bottom:4px}.check{display:grid;gap:10px}.risk{padding:12px 14px;border-radius:16px;border-left:4px solid var(--danger);background:color-mix(in oklab,var(--danger) 8%, var(--panel));border:1px solid var(--border)} footer{margin-top:18px;color:var(--muted);font-size:.92rem}
+@media (max-width: 1100px){.grid{grid-template-columns:1fr}.terms,.flow{grid-template-columns:1fr 1fr}.page{padding:18px}} @media (max-width: 700px){.terms,.flow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <div>
+    <h1 class="title">SSO in IAM</h1>
+    <p class="lead">Start with the key terms, then use the interactive flowchart to explain how a user gets from one login to many apps. The deck below also captures the main risks and the controls that reduce them, such as MFA, least privilege, monitoring, and strong federation settings. [web:72][web:71][web:86]</p>
+  </div>
+  <button class="btn" id="themeBtn">Toggle theme</button>
+</header>
+
+<div class="grid">
+  <section class="card section">
+    <h2 class="panel-title">Key terms</h2>
+    <div class="terms" id="terms">
+      <div class="term active" data-term="IdP"><h3>Identity Provider</h3><p>The system that authenticates the user, such as Entra ID, Okta, Ping, or Auth0. [web:50][web:63]</p></div>
+      <div class="term" data-term="SP"><h3>Service Provider</h3><p>The app that trusts the IdP and grants access after validation. [web:49][web:55]</p></div>
+      <div class="term" data-term="Assertion"><h3>Assertion / Token</h3><p>SAML uses a signed assertion; OIDC uses an ID token to convey identity. [web:55][web:63]</p></div>
+      <div class="term" data-term="Session"><h3>Session</h3><p>The app session created after the token or assertion is accepted. [web:50][web:58]</p></div>
+      <div class="term" data-term="MFA"><h3>MFA</h3><p>Extra verification such as authenticator app, passkey, or biometric step. [web:71][web:74][web:96]</p></div>
+      <div class="term" data-term="RelayState"><h3>RelayState / Redirect</h3><p>Used to return the user to the right app path after sign-in. [web:80][web:84]</p></div>
+      <div class="term" data-term="Audience"><h3>Audience / ACS</h3><p>Validation targets that help the app confirm the message is meant for it. [web:80][web:95]</p></div>
+      <div class="term" data-term="Clock"><h3>Clock Skew</h3><p>Time difference between IdP and SP that can break assertions if not handled. [web:91][web:102]</p></div>
+    </div>
+    <div class="flow" aria-label="SSO flowchart">
+      <div class="node">User opens protected app</div><div class="arrow">→</div><div class="node">App redirects to IdP</div><div class="arrow">→</div><div class="node">IdP authenticates with MFA</div><div class="arrow">→</div><div class="node">IdP sends signed assertion/token</div><div class="arrow">→</div><div class="node">App validates and creates session</div>
+    </div>
+    <p class="small" style="margin-top:14px">Good example: an engineer clicks “Sign in with SSO” on Jira, gets redirected to the company IdP, completes MFA, and then returns to Jira already logged in. The same browser session can often be reused for other enterprise apps without another password prompt. [web:50][web:81][web:85]</p>
+  </section>
+
+  <aside class="card section" id="detailPane">
+    <h2 class="panel-title" id="detailTitle">Identity Provider</h2>
+    <p id="detailText">The IdP is the trust anchor. It stores the user directory or connects to it, authenticates the user, and issues the signed SAML assertion or OIDC token that the application will verify. [web:50][web:55][web:63]</p>
+    <div class="tabs">
+      <button class="tab active" data-view="risks">Risks</button>
+      <button class="tab" data-view="best">Best practices</button>
+      <button class="tab" data-view="quiz">Quick quiz</button>
+    </div>
+    <div id="viewBox">
+      <div class="check">
+        <div class="risk"><b>Phishing or credential theft</b> One stolen login can unlock many apps if MFA is weak or absent. [web:68][web:69][web:86]</div>
+        <div class="risk"><b>Misconfigured federation</b> Bad metadata, wrong redirect URIs, or broken signature validation can cause unauthorized access or outages. [web:71][web:102]</div>
+        <div class="risk"><b>Single point of failure</b> If the IdP is down, access to many connected systems may stop. [web:72][web:86]</div>
+        <div class="risk"><b>Over-broad access</b> Weak role mapping and no reviews cause privilege creep and excessive access. [web:72][web:70]</div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<section class="card section" style="margin-top:20px">
+  <h2 class="panel-title">Best practices checklist</h2>
+  <div class="check">
+    <div class="qa"><b>1. Enforce strong MFA</b> Use MFA for all users and especially for admins and sensitive apps. [web:71][web:74][web:96]</div>
+    <div class="qa"><b>2. Validate federation carefully</b> Check signatures, issuer, audience, redirect URIs, metadata, and time validity windows. [web:55][web:58][web:91][web:102]</div>
+    <div class="qa"><b>3. Apply least privilege</b> Map access to roles or attributes, then review and remove access regularly. [web:67][web:72][web:70]</div>
+    <div class="qa"><b>4. Monitor and log</b> Watch for unusual logins, risky sessions, and access anomalies. [web:72][web:74]</div>
+    <div class="qa"><b>5. Automate lifecycle</b> Provision and deprovision quickly so old access does not remain active. [web:70][web:72]</div>
+  </div>
+</section>
+
+<section class="card section" style="margin-top:20px">
+  <h2 class="panel-title">Protocol notes</h2>
+  <p class="small">SAML is common for enterprise workforce SSO and returns XML-based signed assertions, while OIDC is a modern authentication layer that returns tokens such as an ID token. Both rely on browser redirects and a configured trust relationship between the IdP and the app. [web:55][web:63][web:82][web:89]</p>
+  <p class="small">A useful mental model for engineers is: the app asks “who are you?”, the IdP proves it, and then the app asks “what are you allowed to do here?”. [web:50][web:85]</p>
+</section>
+
+<footer>Tap any term to expand it; use the flowchart as the teaching anchor; then close with the risk and best-practice checklist. [web:72][web:71]</footer>
+</div>
+<script>
+const termData = {
+ IdP:{title:'Identity Provider', text:'The IdP is the trust anchor. It stores the user directory or connects to it, authenticates the user, and issues the signed SAML assertion or OIDC token that the application will verify. [web:50][web:55][web:63]'},
+ SP:{title:'Service Provider', text:'The SP is the target app. It trusts the IdP, redirects users for login, validates the response, and creates its own app session after successful verification. [web:49][web:55][web:81]'},
+ Assertion:{title:'Assertion / Token', text:'SAML uses a signed assertion and OIDC uses an ID token. Both are proof that the IdP authenticated the user and passed identity information to the app. [web:55][web:63][web:85]'},
+ Session:{title:'Session', text:'After validation, the app creates a local session cookie or equivalent session state so the user can continue without typing credentials again. [web:50][web:58][web:81]'},
+ MFA:{title:'MFA', text:'MFA adds a second verification step such as an authenticator app, biometrics, or a passkey. It is one of the strongest ways to reduce SSO takeover risk. [web:71][web:74][web:96]'},
+ RelayState:{title:'RelayState / Redirect', text:'RelayState helps return the user to the right destination after sign-in, and clean redirect handling reduces confusion and security mistakes. [web:80][web:84][web:102]'},
+ Audience:{title:'Audience / ACS', text:'Audience and ACS help the app ensure the assertion or token is intended for it, which is critical to prevent replay and misuse. [web:80][web:95]'},
+ Clock:{title:'Clock Skew', text:'If the IdP and SP clocks are out of sync, assertions may be rejected or dangerously over-tolerated. Good time sync and short validity windows matter. [web:91][web:92][web:97]'}
+};
+const terms=document.querySelectorAll('.term');
+const title=document.getElementById('detailTitle');
+const text=document.getElementById('detailText');
+terms.forEach(t=>t.addEventListener('click',()=>{terms.forEach(x=>x.classList.remove('active'));t.classList.add('active');const d=termData[t.dataset.term];title.textContent=d.title;text.textContent=d.text;}));
+const tabs=document.querySelectorAll('.tab');
+const box=document.getElementById('viewBox');
+const views={
+ risks:`<div class="check"><div class="risk"><b>Phishing or credential theft</b> One stolen login can unlock many apps if MFA is weak or absent. [web:68][web:69][web:86]</div><div class="risk"><b>Misconfigured federation</b> Bad metadata, wrong redirect URIs, or broken signature validation can cause unauthorized access or outages. [web:71][web:102]</div><div class="risk"><b>Single point of failure</b> If the IdP is down, access to many connected systems may stop. [web:72][web:86]</div><div class="risk"><b>Over-broad access</b> Weak role mapping and no reviews cause privilege creep and excessive access. [web:72][web:70]</div></div>`,
+ best:`<div class="check"><div class="qa"><b>Strong MFA</b> Require MFA for all users, with stronger methods for privileged accounts. [web:71][web:74][web:96]</div><div class="qa"><b>Validate federation</b> Check signatures, audience, issuer, redirect URIs, and time validity. [web:55][web:58][web:91][web:102]</div><div class="qa"><b>Least privilege</b> Restrict access with roles or attributes and review entitlements frequently. [web:67][web:72][web:70]</div><div class="qa"><b>Logging and automation</b> Monitor sign-ins and automate onboarding/offboarding to reduce orphaned access. [web:70][web:72][web:74]</div></div>`,
+ quiz:`<div class="quiz"><div class="qa"><b>Q1.</b> What is the difference between an IdP and an SP?</div><div class="qa"><b>Q2.</b> Why is MFA so important in SSO?</div><div class="qa"><b>Q3.</b> Name one SAML validation check and one OIDC validation check.</div><div class="qa"><b>Q4.</b> What can clock skew break in a SSO flow?</div></div>`
+};
+tabs.forEach(t=>t.addEventListener('click',()=>{tabs.forEach(x=>x.classList.remove('active'));t.classList.add('active');box.innerHTML=views[t.dataset.view];}));
+const themeBtn=document.getElementById('themeBtn');themeBtn.onclick=()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'};
+</script>
+</body>
+</html>

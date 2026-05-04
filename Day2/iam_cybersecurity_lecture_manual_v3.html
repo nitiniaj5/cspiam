@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="slides-format" content="viewport">
+  <title>IAM Cybersecurity Basics - Lecture Manual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-bg: #0A0A0A;
+      --color-bg-deep: #111111;
+      --color-surface: #161616;
+      --color-text: #F3F4F6;
+      --color-text-secondary: #D1D5DB;
+      --color-text-muted: #9CA3AF;
+      --color-accent-1: #00FF41;
+      --color-accent-2: #FFA500;
+      --color-accent-3: #FF3B30;
+      --color-glass-bg: rgba(0,255,65,0.05);
+      --color-glass-border: rgba(0,255,65,0.12);
+      --color-vignette: rgba(0,0,0,0.42);
+      --font-display: 'JetBrains Mono', monospace;
+      --font-body: 'Inter', sans-serif;
+    }
+  </style>
+  <style>
+    :root { --color-bg: #0A0A0A; --color-text: #F3F4F6; --glow-color-rgb: 0,255,65; --font-body:'Inter',sans-serif; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { background: var(--color-bg); margin: 0; }
+    body { font-family: var(--font-body); color: var(--color-text); overflow: hidden; height: 100vh; width: 100vw; }
+    .deck { width: 100vw; height: 100vh; position: relative; }
+    .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: scale(0.95); transition: opacity 0.7s ease, transform 0.7s ease; pointer-events: none; overflow: hidden; }
+    .slide.active { opacity: 1; transform: scale(1); pointer-events: all; }
+    .slide > .content { position: relative; z-index: 2; width: 100%; max-width: 1180px; padding: clamp(1.5rem, 3vw, 3rem); }
+    .nav-controls { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; z-index: 100; background: rgba(0,0,0,0.35); backdrop-filter: blur(10px); padding: 10px 24px; border-radius: 40px; border: 1px solid var(--color-glass-border); }
+    .nav-btn { width: 40px; height: 40px; border: none; background: var(--color-glass-bg); color: var(--color-accent-1); border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+    .slide-dots { display: flex; gap: 8px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.14); cursor: pointer; }
+    .dot.active { background: var(--color-accent-1); transform: scale(1.25); }
+    .slide-counter { font-size: 0.8rem; color: var(--color-text-muted); min-width: 50px; text-align: center; }
+    .reveal { opacity: 0; transform: translateY(20px); }
+    .gradient-mesh { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(80px); animation: float-slow 12s ease-in-out infinite; }
+    .blob:nth-child(2) { animation: float-drift 16s ease-in-out infinite; }
+    .blob:nth-child(3) { animation: float-slow 18s ease-in-out infinite reverse; }
+    .slide::before { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"); background-size:256px 256px; opacity:0.04; mix-blend-mode:overlay; }
+    .slide::after { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; background: radial-gradient(ellipse at center, transparent 52%, var(--color-vignette) 100%); }
+    .text-glow { text-shadow: 0 0 20px rgba(var(--glow-color-rgb), 0.45), 0 0 50px rgba(var(--glow-color-rgb), 0.2); }
+    .card { background: rgba(10,10,10,0.55); border: 1px solid var(--color-glass-border); border-radius: 20px; padding: 1.1rem 1.2rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02); }
+    .mini { font-size: 0.82rem; line-height: 1.35; color: #cbd5e1; }
+    .bar-track { width: 100%; height: 22px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+    .bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--color-accent-1), var(--color-accent-2)); width: 0%; }
+    .timeline::before { content:''; position:absolute; left: 18px; top: 10px; bottom: 10px; width: 2px; background: linear-gradient(var(--color-accent-1), var(--color-accent-2), var(--color-accent-3)); }
+    .time-item { position: relative; padding-left: 48px; }
+    .time-item::before { content:''; position:absolute; left:10px; top:8px; width:18px; height:18px; border-radius:50%; background: var(--color-accent-1); box-shadow: 0 0 18px rgba(var(--glow-color-rgb),0.6); }
+    .scanline { background: repeating-linear-gradient(180deg, rgba(0,255,65,0.06) 0px, rgba(0,255,65,0.06) 1px, transparent 1px, transparent 4px); }
+    @keyframes float-slow { 0%{transform:translate(0,0) scale(1);} 25%{transform:translate(60px,-40px) scale(1.12);} 50%{transform:translate(-30px,35px) scale(0.92);} 75%{transform:translate(45px,20px) scale(1.08);} 100%{transform:translate(0,0) scale(1);} }
+    @keyframes float-drift { 0%{transform:translate(0,0) scale(1);} 33%{transform:translate(-50px,-60px) scale(1.1);} 66%{transform:translate(50px,20px) scale(0.9);} 100%{transform:translate(0,0) scale(1);} }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    @media (prefers-reduced-motion: reduce){ *,*::before,*::after{ animation-duration:0.01ms !important; transition-duration:0.2s !important; } }
+  </style>
+</head>
+<body>
+<div class="mouse-spotlight" style="position:fixed;inset:0;z-index:99;pointer-events:none;"></div>
+<div class="deck">
+
+  <div class="slide active" data-slide="1">
+    <div class="gradient-mesh">
+      <div class="blob" style="width:480px;height:480px;top:-120px;right:-80px;background:var(--color-accent-1);opacity:.12"></div>
+      <div class="blob" style="width:280px;height:280px;bottom:-80px;left:-40px;background:var(--color-accent-2);opacity:.10"></div>
+      <div class="blob" style="width:220px;height:220px;top:42%;left:16%;background:var(--color-accent-3);opacity:.08"></div>
+    </div>
+    <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1"></canvas>
+    <div class="content text-center">
+      <div class="text-[112px] mb-4 reveal" style="animation: float 3s ease-in-out infinite;">🛡️</div>
+      <h1 class="font-display text-[clamp(2.2rem,5.4vw,4.8rem)] font-extrabold tracking-tight text-glow mb-4 reveal">IAM Cybersecurity Basics</h1>
+      <p class="text-[clamp(.9rem,1.5vw,1.25rem)] uppercase tracking-[6px] text-text-muted reveal">Lecture manual for 5 sessions · batch of 50 engineers</p>
+      <div class="mt-8 inline-flex gap-3 reveal">
+        <span class="px-4 py-2 rounded-full border border-glass-border bg-glass-bg text-accent-1">Identity</span>
+        <span class="px-4 py-2 rounded-full border border-glass-border bg-glass-bg text-accent-2">Access</span>
+        <span class="px-4 py-2 rounded-full border border-glass-border bg-glass-bg text-accent-3">Governance</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="2">
+    <div class="gradient-mesh"><div class="blob" style="width:330px;height:330px;top:-90px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-60px;left:-30px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl text-accent-1 mb-6 reveal">Training map</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><div class="text-3xl font-bold text-accent-1 mb-2">01</div><h3 class="font-semibold text-xl mb-2">IAM foundations</h3><p class="mini">Why identity is the security perimeter, IAM terms, authentication vs authorization, and common attack paths.</p></div>
+        <div class="card reveal"><div class="text-3xl font-bold text-accent-2 mb-2">02</div><h3 class="font-semibold text-xl mb-2">Access models</h3><p class="mini">RBAC, ABAC, least privilege, separation of duties, JML lifecycle, and access reviews.</p></div>
+        <div class="card reveal"><div class="text-3xl font-bold text-accent-3 mb-2">03</div><h3 class="font-semibold text-xl mb-2">Enterprise controls</h3><p class="mini">SSO, MFA, federation, privileged access management, zero trust, and monitoring.</p></div>
+        <div class="card reveal"><div class="text-3xl font-bold text-accent-1 mb-2">04</div><h3 class="font-semibold text-xl mb-2">Practice and cases</h3><p class="mini">Admin account abuse, orphan accounts, cloud misconfigurations, and workshop exercises for engineers.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="3">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-90px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:260px;height:260px;bottom:-60px;left:-30px;background:var(--color-accent-3);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl text-accent-1 mb-6 reveal">What IAM means</h2>
+      <div class="grid grid-cols-2 gap-6 items-stretch">
+        <div class="card reveal"><p class="text-lg leading-relaxed">IAM is the framework of policies and technologies that ensures the right users get the right access to the right resources at the right time. Core functions are identifying users, authenticating them, authorizing actions, and tracking access history.</p></div>
+        <div class="grid grid-cols-1 gap-4">
+          <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-1">Identity</h3><p class="mini">A digital representation of a user, service, device, or workload.</p></div>
+          <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-1">Authentication</h3><p class="mini">Proving who you are, for example password plus MFA.</p></div>
+          <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-1">Authorization</h3><p class="mini">Deciding what you can do after login.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="4">
+    <div class="gradient-mesh"><div class="blob" style="width:320px;height:320px;top:-80px;right:-70px;background:var(--color-accent-2);opacity:.07"></div><div class="blob" style="width:240px;height:240px;bottom:-50px;left:-30px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Why IAM is central</h2>
+      <div class="grid grid-cols-3 gap-5">
+        <div class="card reveal"><div class="text-5xl mb-3">🔐</div><h3 class="font-semibold mb-2">Primary perimeter</h3><p class="mini">Modern guidance treats identity as the main security boundary instead of trusting the internal network.</p></div>
+        <div class="card reveal"><div class="text-5xl mb-3">👤</div><h3 class="font-semibold mb-2">Stops account misuse</h3><p class="mini">Least privilege and strong verification reduce lateral movement when a standard account is compromised.</p></div>
+        <div class="card reveal"><div class="text-5xl mb-3">📋</div><h3 class="font-semibold mb-2">Supports audit</h3><p class="mini">Provisioning, role assignment, and login records help with compliance and investigations.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="5">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-100px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-50px;left:-30px;background:var(--color-accent-2);opacity:.07"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Authentication vs authorization</h2>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="card reveal"><h3 class="text-2xl font-bold text-accent-1 mb-3">Authentication</h3><ul class="mini space-y-2"><li>Checks identity.</li><li>Examples: password, passkey, OTP, smart card, biometrics.</li><li>Question answered: “Are you really Alice?”</li></ul></div>
+        <div class="card reveal"><h3 class="text-2xl font-bold text-accent-2 mb-3">Authorization</h3><ul class="mini space-y-2"><li>Checks permissions after login.</li><li>Examples: read-only, approver, admin, database owner.</li><li>Question answered: “What can Alice do now?”</li></ul></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="text-lg">Example: a developer signs into the company portal with MFA, then receives permission to open Jira and GitHub, but not payroll or production root access.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="6">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-90px;right:-70px;background:var(--color-accent-1);opacity:.07"></div><div class="blob" style="width:220px;height:220px;bottom:-40px;left:-20px;background:var(--color-accent-3);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Common IAM building blocks</h2>
+      <div class="grid grid-cols-3 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Directory</h3><p class="mini">Stores users, groups, and attributes such as department and manager.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">SSO and federation</h3><p class="mini">One login across many apps using standards such as SAML and OpenID Connect.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">MFA</h3><p class="mini">Adds a second factor to make stolen passwords less useful.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">RBAC / ABAC</h3><p class="mini">Assigns access by roles or by attributes and context.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">IGA</h3><p class="mini">Governance workflows for joiner mover leaver, certifications, and policy checks.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">PAM</h3><p class="mini">Secures admin credentials with vaulting, rotation, JIT elevation, and session recording.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="7">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-90px;right:-90px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-60px;left:-40px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Access control models</h2>
+      <div class="grid grid-cols-3 gap-5">
+        <div class="card reveal"><h3 class="text-xl font-bold text-accent-1 mb-2">RBAC</h3><p class="mini">Access depends on job role. Easy to manage in enterprises, for example “L1 Support” or “HR Manager”.</p></div>
+        <div class="card reveal"><h3 class="text-xl font-bold text-accent-2 mb-2">ABAC</h3><p class="mini">Access depends on attributes like department, location, device trust, or data sensitivity.</p></div>
+        <div class="card reveal"><h3 class="text-xl font-bold text-accent-3 mb-2">JIT / JEA</h3><p class="mini">Privilege is granted only for a short time and only for a defined task.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="text-lg">Teaching example: RBAC lets every finance analyst view financial reports, ABAC can further restrict access to only analysts in India using a managed laptop during business hours.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="8">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-100px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:220px;height:220px;bottom:-50px;left:-20px;background:var(--color-accent-3);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Least privilege in practice</h2>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-3">Rule</h3><p class="mini">Give only the minimum access needed for the task, nothing more, and remove it when the task ends.</p><div class="mt-4 text-5xl font-extrabold text-glow" data-count="1">0</div><div class="mini">core principle to repeat throughout the course</div></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-3">Example</h3><p class="mini">A database engineer gets temporary elevation for a production change window, session recording is enabled, and the rights expire automatically after the ticket closes.</p></div>
+      </div>
+      <div class="grid grid-cols-3 gap-4 mt-5">
+        <div class="card reveal"><p class="mini">Good: separate admin and normal user accounts.</p></div>
+        <div class="card reveal"><p class="mini">Bad: shared “superadmin” password known to the whole team.</p></div>
+        <div class="card reveal"><p class="mini">Risk: standing privilege becomes attacker privilege after compromise.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="9">
+    <div class="gradient-mesh"><div class="blob" style="width:320px;height:320px;top:-80px;right:-60px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:230px;height:230px;bottom:-50px;left:-30px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Joiner mover leaver lifecycle</h2>
+      <div class="timeline relative grid grid-cols-1 gap-5 pl-2">
+        <div class="time-item reveal"><h3 class="font-semibold text-accent-1">Joiner</h3><p class="mini">Create identity, assign starter roles, issue MFA, and provision baseline applications.</p></div>
+        <div class="time-item reveal"><h3 class="font-semibold text-accent-2">Mover</h3><p class="mini">When department or project changes, remove old access and grant only the new entitlements.</p></div>
+        <div class="time-item reveal"><h3 class="font-semibold text-accent-3">Leaver</h3><p class="mini">Disable accounts fast, rotate secrets, revoke sessions, and archive logs for audit.</p></div>
+        <div class="time-item reveal"><h3 class="font-semibold text-accent-1">Review</h3><p class="mini">Managers and application owners certify that access is still needed.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="10">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-100px;right:-70px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-50px;left:-20px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Core enterprise controls</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Single sign-on</h3><p class="mini">Improves user experience and centralizes control, but federation trust must be configured carefully.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Phishing-resistant MFA</h3><p class="mini">Use stronger verification methods to reduce the value of stolen passwords and OTP fatigue attacks.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">Conditional access</h3><p class="mini">Use device trust, geolocation, risk score, and app sensitivity to decide whether access should be allowed.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Centralized governance</h3><p class="mini">Keep identities and entitlements visible across apps so reviews, approvals, and audits are consistent.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="11">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-100px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:260px;height:260px;bottom:-70px;left:-40px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <canvas class="particle-canvas-ambient" style="position:absolute;inset:0;z-index:1"></canvas>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Privileged access management</h2>
+      <div class="grid grid-cols-3 gap-5">
+        <div class="card reveal"><div class="text-5xl mb-2">🗝️</div><h3 class="font-semibold text-accent-1 mb-2">Vaulting</h3><p class="mini">Store privileged credentials in a controlled vault instead of spreadsheets or chat.</p></div>
+        <div class="card reveal"><div class="text-5xl mb-2">⏱️</div><h3 class="font-semibold text-accent-2 mb-2">JIT elevation</h3><p class="mini">Grant elevated rights only for a limited time window and only after approval.</p></div>
+        <div class="card reveal"><div class="text-5xl mb-2">🎥</div><h3 class="font-semibold text-accent-3 mb-2">Session recording</h3><p class="mini">Capture privileged sessions to deter misuse and support investigations.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="text-lg">Real-world example: rather than sharing the Linux root password, an admin requests access through PAM, receives a temporary session, and every command is recorded.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="12">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-90px;right:-70px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-30px;background:var(--color-accent-3);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Zero trust and IAM</h2>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="card reveal scanline"><h3 class="font-semibold text-accent-1 mb-2">Principle</h3><p class="mini">Never trust by network location alone. Verify user, device, context, and requested resource every time.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Identity role</h3><p class="mini">Zero trust relies on strong authentication, least privilege, and continuous access checks. A widely cited example is Google BeyondCorp, which moved access control from the network perimeter to users and devices.</p></div>
+      </div>
+      <div class="grid grid-cols-3 gap-4 mt-5">
+        <div class="card reveal"><p class="mini">Step-up MFA for risky logins.</p></div>
+        <div class="card reveal"><p class="mini">No always-on VPN trust assumption.</p></div>
+        <div class="card reveal"><p class="mini">Protect service accounts too, not just humans.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="13">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-90px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:220px;height:220px;bottom:-40px;left:-20px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">IAM attack scenarios</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">Scenario 1: orphan account</h3><p class="mini">An employee leaves, but the VPN and SaaS accounts remain active. An attacker reuses the credentials and accesses internal tools.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">Scenario 2: privilege creep</h3><p class="mini">A developer changes teams multiple times and accumulates rights across old systems, creating hidden risk.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">Scenario 3: shared admin account</h3><p class="mini">Nobody can prove who performed a dangerous action because all admins used the same credential.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">Scenario 4: MFA bypass attempt</h3><p class="mini">A phishing page steals a password and the attacker pushes repeated OTP requests hoping the user clicks approve.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="14">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-100px;right:-70px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-50px;left:-30px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Controls that matter most</h2>
+      <div class="grid grid-cols-1 gap-5">
+        <div class="grid grid-cols-3 gap-4">
+          <div class="card reveal"><div class="text-3xl font-bold text-accent-1 mb-1">MFA</div><div class="mini">Strong login proof</div></div>
+          <div class="card reveal"><div class="text-3xl font-bold text-accent-2 mb-1">RBAC/ABAC</div><div class="mini">Granular permissions</div></div>
+          <div class="card reveal"><div class="text-3xl font-bold text-accent-3 mb-1">PAM</div><div class="mini">Admin risk reduction</div></div>
+        </div>
+        <div class="space-y-4 reveal">
+          <div class="grid grid-cols-[160px_1fr_70px] items-center gap-4"><div class="mini">Least privilege</div><div class="bar-track"><div class="bar-fill" data-width="95"></div></div><div class="mini text-right">95</div></div>
+          <div class="grid grid-cols-[160px_1fr_70px] items-center gap-4"><div class="mini">MFA everywhere</div><div class="bar-track"><div class="bar-fill" data-width="90"></div></div><div class="mini text-right">90</div></div>
+          <div class="grid grid-cols-[160px_1fr_70px] items-center gap-4"><div class="mini">Access reviews</div><div class="bar-track"><div class="bar-fill" data-width="85"></div></div><div class="mini text-right">85</div></div>
+          <div class="grid grid-cols-[160px_1fr_70px] items-center gap-4"><div class="mini">PAM for admins</div><div class="bar-track"><div class="bar-fill" data-width="88"></div></div><div class="mini text-right">88</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="15">
+    <div class="gradient-mesh"><div class="blob" style="width:330px;height:330px;top:-80px;right:-70px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-20px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Suggested 5-session plan</h2>
+      <div class="grid grid-cols-5 gap-4">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Session 1</h3><p class="mini">Security basics, IAM terminology, authentication, authorization, and hands-on login flow examples.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Session 2</h3><p class="mini">RBAC, ABAC, least privilege, segregation of duties, and access modeling workshop.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">Session 3</h3><p class="mini">SSO, federation, MFA, conditional access, and cloud IAM concepts.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Session 4</h3><p class="mini">IGA, joiner mover leaver, approvals, certifications, and policy violations.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Session 5</h3><p class="mini">PAM, zero trust, attack scenarios, recap quiz, and practical case discussions.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="16">
+    <div class="gradient-mesh"><div class="blob" style="width:330px;height:330px;top:-80px;right:-70px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-20px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Exercises for engineers</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Exercise A</h3><p class="mini">Map identities in your environment: employee, contractor, service account, admin, API client, device identity.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Exercise B</h3><p class="mini">Design RBAC for a sample company with HR, Finance, DevOps, and Security teams.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">Exercise C</h3><p class="mini">Find risks in a bad access request process, such as email-based approvals and no expiry.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Exercise D</h3><p class="mini">Review an incident: admin account compromise, then propose detective and preventive IAM controls.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="17">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-90px;right:-70px;background:var(--color-accent-3);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-30px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Quick recap for learners</h2>
+      <div class="grid grid-cols-1 gap-4">
+        <div class="card reveal"><p class="text-lg">Identity is the new perimeter.</p></div>
+        <div class="card reveal"><p class="text-lg">Authentication proves who the subject is; authorization defines what the subject can do.</p></div>
+        <div class="card reveal"><p class="text-lg">Least privilege, MFA, access reviews, and PAM are the most repeated controls because they reduce real attack paths.</p></div>
+        <div class="card reveal"><p class="text-lg">Good IAM is not only technology; it is policy, lifecycle discipline, and evidence.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="18">
+    <div class="gradient-mesh">
+      <div class="blob" style="width:460px;height:460px;top:-120px;right:-90px;background:var(--color-accent-1);opacity:.14"></div>
+      <div class="blob" style="width:300px;height:300px;bottom:-80px;left:-40px;background:var(--color-accent-2);opacity:.10"></div>
+      <div class="blob" style="width:220px;height:220px;top:40%;left:14%;background:var(--color-accent-3);opacity:.08"></div>
+    </div>
+    <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1"></canvas>
+    <div class="content text-center">
+      <div class="text-[100px] mb-4 reveal" style="animation: float 3s ease-in-out infinite;">✅</div>
+      <h2 class="font-display text-[clamp(2.2rem,5vw,4.4rem)] text-glow mb-4 reveal">Ready to Teach</h2>
+      <p class="uppercase tracking-[6px] text-text-muted reveal">Use this deck as your lecture manual and discussion guide</p>
+    </div>
+  </div>
+
+
+
+  <div class="slide" data-slide="19">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-90px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-60px;left:-30px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Where tools fit in</h2>
+      <div class="grid grid-cols-3 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Microsoft Entra / Okta</h3><p class="mini">Strong for directory, authentication, MFA, federation, conditional access, and application SSO.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Saviynt / SailPoint</h3><p class="mini">Focused on governance, lifecycle automation, access request, certifications, SoD, and enterprise-scale visibility.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">CyberArk / BeyondTrust</h3><p class="mini">Focused on PAM, vaulting, session management, and privileged access control.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="text-lg">Teaching note: explain that enterprises usually combine tools instead of buying one product for every IAM job.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="20">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-90px;right:-70px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-50px;left:-20px;background:var(--color-accent-3);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Saviynt overview</h2>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="card reveal"><p class="text-lg leading-relaxed">Saviynt positions its platform as a converged identity cloud covering identity governance and administration, PAM, application governance, external identity, and newer posture and threat response capabilities.</p></div>
+        <div class="grid grid-cols-1 gap-4">
+          <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-1">Lifecycle automation</h3><p class="mini">Automates onboarding, role assignment, access changes, and revocation on departure.</p></div>
+          <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-1">AI recommendations</h3><p class="mini">Provides intelligent suggestions for access requests and certifications.</p></div>
+          <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-1">Unified platform</h3><p class="mini">Brings governance, administration, and control into a single cloud service.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="21">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-100px;right:-80px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:230px;height:230px;bottom:-50px;left:-20px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">SailPoint overview</h2>
+      <div class="grid grid-cols-3 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Governance focus</h3><p class="mini">SailPoint emphasizes access reviews, certifications, policy enforcement, and continuous risk analysis.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Lifecycle and approvals</h3><p class="mini">Supports onboarding, offboarding, access request, and approval workflows across enterprise apps.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">AI-driven identity security</h3><p class="mini">Identity Security Cloud adds AI-based insights, outlier analysis, and workflow assistance.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="text-lg">Teaching note: compare SailPoint to Saviynt as “IGA-first” platforms, then explain how their strengths overlap with, but do not replace, core IdP and PAM platforms.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="22">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-100px;right:-70px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-25px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Saviynt vs SailPoint in class</h2>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Common ground</h3><p class="mini">IGA, lifecycle management, certifications, policy enforcement, access request workflows, and audit support.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Discussion points</h3><p class="mini">Cloud operating model, UX, integration patterns, analytics, role mining, and how each platform fits the enterprise stack.</p></div>
+      </div>
+      <div class="grid grid-cols-3 gap-4 mt-5">
+        <div class="card reveal"><p class="mini">Saviynt often appears in converged identity discussions.</p></div>
+        <div class="card reveal"><p class="mini">SailPoint is often referenced strongly for governance and certification maturity.</p></div>
+        <div class="card reveal"><p class="mini">Both require clean source data, process design, and ownership models.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="23">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-90px;right:-80px;background:var(--color-accent-3);opacity:.08"></div><div class="blob" style="width:220px;height:220px;bottom:-40px;left:-20px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Speaker notes · Session 1</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Flow</h3><p class="mini">Start with why identity matters more than perimeter. Use daily examples: office Wi‑Fi, GitHub, VPN, banking app, and company HR portal. Revisit authentication versus authorization several times and ask learners to classify examples aloud.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Instructor emphasis</h3><p class="mini">Keep terminology simple. Ask engineers to list all identities they know: human, admin, service account, bot, API key, workload, and device. Close with a mini whiteboard exercise mapping login flow to policy decision.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="mini">Suggested pacing: 45 min concepts, 45 min examples, 30 min discussion, 20 min break, 60 min workshop, 20 min recap and quiz.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="24">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-90px;right:-80px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:220px;height:220px;bottom:-40px;left:-20px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Speaker notes · Session 2</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Flow</h3><p class="mini">Teach RBAC first because it is intuitive. Then show where RBAC breaks, such as contractor access, geography-specific access, and temporary projects, and introduce ABAC and JIT elevation.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">Instructor emphasis</h3><p class="mini">Use a sample company org chart. Ask students to design 5 roles and then identify where separation of duties conflicts would appear, such as requester and approver being the same person.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="mini">Suggested board activity: create one bad role model and one improved role model, then compare maintenance effort and risk.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="25">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-100px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-20px;background:var(--color-accent-3);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Speaker notes · Session 3</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Flow</h3><p class="mini">Demonstrate SSO and federation visually: identity provider, service provider, token, assertion, redirect. Explain why user convenience and central control both improve when SSO is implemented well.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Instructor emphasis</h3><p class="mini">Spend time on phishing-resistant MFA, push fatigue, and conditional access. Connect cloud IAM to real engineering work like AWS roles, Azure RBAC, and workload identities.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="mini">Suggested demo: compare a legacy app with local login against a federated SaaS app with SSO and MFA.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="26">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-100px;right:-80px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-50px;left:-20px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Speaker notes · Session 4</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Flow</h3><p class="mini">Introduce IGA using business language first: who should have what, who approved it, and how we prove it. Then show how joiner mover leaver, certifications, policies, and audit reports solve that problem.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Instructor emphasis</h3><p class="mini">This is where you add Saviynt and SailPoint. Explain connectors, source systems, authoritative HR data, birthright access, approval workflows, certifications, SoD checks, and remediation tickets.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="mini">Suggested activity: give students a fake access review sheet and ask which access should be revoked, retained, or escalated.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="27">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-90px;right:-80px;background:var(--color-accent-3);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-20px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <canvas class="particle-canvas-ambient" style="position:absolute;inset:0;z-index:1"></canvas>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Speaker notes · Session 5</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Flow</h3><p class="mini">Bring together PAM, zero trust, and attack scenarios. Use incidents and stories rather than only architecture. Engineers remember failure modes better than definitions.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Instructor emphasis</h3><p class="mini">End with practical takeaways: remove standing privilege, protect service accounts, rotate secrets, monitor admin sessions, and make reviews operational rather than annual paperwork.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="mini">Final hour idea: team-based case study where each group recommends controls for a breach caused by poor IAM hygiene.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="28">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-90px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-20px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Quiz · Session 1</h2>
+      <div class="grid grid-cols-1 gap-4">
+        <div class="card reveal"><p class="mini">1. What is the difference between identity, authentication, and authorization?</p></div>
+        <div class="card reveal"><p class="mini">2. Why is identity often called the new perimeter?</p></div>
+        <div class="card reveal"><p class="mini">3. Name three non-human identities used in modern systems.</p></div>
+        <div class="card reveal"><p class="mini">4. Give one example of strong authentication and one example of weak authentication.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="29">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-90px;right:-80px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-20px;background:var(--color-accent-3);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Quiz · Session 2</h2>
+      <div class="grid grid-cols-1 gap-4">
+        <div class="card reveal"><p class="mini">1. When is RBAC enough, and when do you need ABAC?</p></div>
+        <div class="card reveal"><p class="mini">2. What is least privilege, and why does privilege creep break it?</p></div>
+        <div class="card reveal"><p class="mini">3. What is segregation of duties? Give one conflict example.</p></div>
+        <div class="card reveal"><p class="mini">4. Why is temporary access safer than standing access?</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="30">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-90px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-20px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Quiz · Session 3</h2>
+      <div class="grid grid-cols-1 gap-4">
+        <div class="card reveal"><p class="mini">1. What problem does SSO solve for users and for security teams?</p></div>
+        <div class="card reveal"><p class="mini">2. What is federation in simple words?</p></div>
+        <div class="card reveal"><p class="mini">3. What is MFA fatigue, and how can stronger factors reduce it?</p></div>
+        <div class="card reveal"><p class="mini">4. How does conditional access improve a login decision?</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="31">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-90px;right:-80px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-20px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Quiz · Session 4</h2>
+      <div class="grid grid-cols-1 gap-4">
+        <div class="card reveal"><p class="mini">1. What is the difference between identity management and identity governance?</p></div>
+        <div class="card reveal"><p class="mini">2. Why is HR often treated as an authoritative source in IGA?</p></div>
+        <div class="card reveal"><p class="mini">3. What is an access certification campaign?</p></div>
+        <div class="card reveal"><p class="mini">4. Name two capabilities common to Saviynt and SailPoint.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="32">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-90px;right:-80px;background:var(--color-accent-3);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-20px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Quiz · Session 5</h2>
+      <div class="grid grid-cols-1 gap-4">
+        <div class="card reveal"><p class="mini">1. Why is a shared admin account dangerous even if the password is strong?</p></div>
+        <div class="card reveal"><p class="mini">2. What are the three most important PAM controls to explain to engineers?</p></div>
+        <div class="card reveal"><p class="mini">3. How does zero trust change traditional access assumptions?</p></div>
+        <div class="card reveal"><p class="mini">4. What IAM controls would you recommend after an orphan-account breach?</p></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="slide" data-slide="33">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-90px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-20px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Troubleshooting appendix</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Goal</h3><p class="mini">Help engineers think systematically when access, provisioning, certification, or connector processes fail.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Approach</h3><p class="mini">Validate source data, identity creation, role assignment, workflow state, provisioning logs, and target-system response before escalating.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="text-lg">Teaching note: most IAM issues are not random; they usually break at handoff points between HR, IGA, workflow, connector, and target application.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="34">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-90px;right:-80px;background:var(--color-accent-3);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-50px;left:-20px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Scenario 1 · New joiner gets no access</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Likely causes</h3><p class="mini">HR record did not aggregate, identity was not created, joiner rule did not fire, role criteria did not match, or provisioning failed at connector or target level.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Check sequence</h3><p class="mini">1. Verify HR source data, 2. confirm identity exists, 3. inspect role assignment, 4. review workflow/provisioning plan, 5. inspect logs and target response.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="mini">Classroom line: if access is missing, do not start with the app; start upstream with authoritative source and identity creation.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="35">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-100px;right:-80px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:230px;height:230px;bottom:-50px;left:-20px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Scenario 2 · Request stuck in workflow</h2>
+      <div class="grid grid-cols-3 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Symptoms</h3><p class="mini">Request stays pending, no approval mail arrives, no provisioning task launches.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Likely causes</h3><p class="mini">Dynamic approver rules failed, delegated approver data is wrong, workflow logic is incomplete, or notification jobs are not running.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">Checks</h3><p class="mini">Validate approver mapping, workflow transitions, mail/job scheduler health, and whether mandatory fields like start or end dates were supplied.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="36">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-90px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-50px;left:-20px;background:var(--color-accent-3);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Scenario 3 · Entitlement not visible</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Typical reasons</h3><p class="mini">Entitlement is inactive, missing status metadata, not imported correctly, hidden by requestability settings, or not mapped to the right endpoint/application.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">What to inspect</h3><p class="mini">Check aggregation results, entitlement status columns, requestable flags, endpoint mapping, and whether the object was filtered out by policy.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="mini">Use this to explain why “the app team says the group exists” is not enough; governance metadata must also be correct.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="37">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-90px;right:-80px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-50px;left:-20px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Scenario 4 · Aggregation fails</h2>
+      <div class="grid grid-cols-3 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Connector layer</h3><p class="mini">Bad credentials, expired secrets, network path issues, certificate trust problems, or wrong endpoint URL.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Data layer</h3><p class="mini">Unexpected schema, missing group endpoint, malformed attributes, or target API limits.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-3 mb-2">Action</h3><p class="mini">Run test connection, read activity logs, isolate source object type, and retry with a narrow scope before full aggregation.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="38">
+    <div class="gradient-mesh"><div class="blob" style="width:340px;height:340px;top:-90px;right:-80px;background:var(--color-accent-3);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-50px;left:-20px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Scenario 5 · Certification data looks wrong</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Symptoms</h3><p class="mini">Reviewers see outdated access, missing entitlements, or empty campaigns, and decisions cannot be trusted.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Fix path</h3><p class="mini">Refresh extraction or aggregation first, verify campaign population logic, confirm identities and entitlements loaded successfully, then relaunch or repopulate if needed.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="mini">Teaching tip: explain that a certification campaign is only as good as the last successful import of identity and entitlement data.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="39">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-100px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:250px;height:250px;bottom:-50px;left:-20px;background:var(--color-accent-2);opacity:.06"></div></div>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Scenario 6 · Orphan accounts found</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Why it happens</h3><p class="mini">Terminations do not flow downstream, source matching breaks, linked accounts remain after app-side changes, or reconciliation has not run recently.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Response</h3><p class="mini">Confirm source-to-target correlation rules, run reconciliation, check missing manager or HR attributes, disable risky accounts fast, and trace the offboarding event chain.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="mini">Key lesson: orphaned accounts are a lifecycle failure, not just an audit finding.</p></div>
+    </div>
+  </div>
+
+  <div class="slide" data-slide="40">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-90px;right:-80px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:240px;height:240px;bottom:-50px;left:-20px;background:var(--color-accent-1);opacity:.06"></div></div>
+    <canvas class="particle-canvas-ambient" style="position:absolute;inset:0;z-index:1"></canvas>
+    <div class="content">
+      <h2 class="font-display text-4xl mb-6 reveal">Troubleshooting checklist</h2>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card reveal"><h3 class="font-semibold text-accent-1 mb-2">Always verify</h3><p class="mini">Source data, identity status, role assignment, workflow state, provisioning plan, connector health, target response, and audit logs.</p></div>
+        <div class="card reveal"><h3 class="font-semibold text-accent-2 mb-2">Avoid</h3><p class="mini">Guessing, directly changing production access without evidence, skipping upstream checks, and treating symptoms before understanding where the flow actually failed.</p></div>
+      </div>
+      <div class="card mt-5 reveal"><p class="text-lg">Best classroom close: “In IAM, troubleshoot in order — source, identity, policy, workflow, connector, target.”</p></div>
+    </div>
+  </div>
+
+</div>
+<div class="nav-controls" aria-label="Slide navigation">
+  <button class="nav-btn" onclick="changeSlide(-1)" aria-label="Previous slide">&#8249;</button>
+  <div class="slide-dots" id="dots"></div>
+  <button class="nav-btn" onclick="changeSlide(1)" aria-label="Next slide">&#8250;</button>
+  <span class="slide-counter" id="counter">1 / 18</span>
+</div>
+<script>
+let current = 1;
+const total = document.querySelectorAll('.slide').length;
+const dotsContainer = document.getElementById('dots');
+const counter = document.getElementById('counter');
+for (let i = 1; i <= total; i++) { const dot = document.createElement('div'); dot.className = 'dot' + (i===1 ? ' active' : ''); dot.onclick = () => goToSlide(i); dotsContainer.appendChild(dot); }
+function goToSlide(n){ const prev=document.querySelector('.slide.active'); const next=document.querySelector(`.slide[data-slide="${n}"]`); if(prev) prev.classList.remove('active'); if(next){ next.classList.add('active'); animateSlide(next);} current=n; updateNav(); }
+function changeSlide(dir){ let next=current+dir; if(next<1) next=total; if(next>total) next=1; goToSlide(next); }
+function updateNav(){ document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active', i+1===current)); counter.textContent = current + ' / ' + total; }
+document.addEventListener('keydown', (e)=>{ if(e.key==='ArrowRight' || e.key===' '){ e.preventDefault(); changeSlide(1);} if(e.key==='ArrowLeft'){ e.preventDefault(); changeSlide(-1);} });
+let touchStartX = 0; document.addEventListener('touchstart', (e)=>{ touchStartX = e.touches[0].clientX; }); document.addEventListener('touchend', (e)=>{ const diff = touchStartX - e.changedTouches[0].clientX; if(Math.abs(diff)>50) changeSlide(diff>0?1:-1); });
+function animateSlide(slide){ slide.querySelectorAll('.reveal').forEach((el,i)=>{ el.style.transition='none'; el.style.opacity='0'; el.style.transform='translateY(20px)'; el.offsetHeight; const delay=i*0.08; el.style.transition=`opacity 0.35s ease ${delay}s, transform 0.35s ease ${delay}s`; el.style.opacity='1'; el.style.transform='translateY(0)'; }); animateSlideEffects(slide); }
+function animateSlideEffects(slide){ slide.querySelectorAll('[data-count]:not(.counted)').forEach(el=>{ el.classList.add('counted'); const target=parseInt(el.dataset.count||'0'); let cur=0; const step=Math.max(target/30,1); const t=setInterval(()=>{ cur+=step; if(cur>=target){ cur=target; clearInterval(t);} el.textContent = Math.round(cur); },30); }); slide.querySelectorAll('.bar-fill:not(.fill-init)').forEach((bar,i)=>{ bar.classList.add('fill-init'); bar.style.width='0%'; bar.style.transition=`width 0.6s ease ${i*0.08}s`; bar.offsetHeight; bar.style.width = bar.dataset.width + '%'; }); }
+document.addEventListener('mousemove', (e)=>{ const spotlight=document.querySelector('.mouse-spotlight'); if(spotlight){ spotlight.style.background = `radial-gradient(600px circle at ${e.clientX}px ${e.clientY}px, rgba(0,255,65,0.06), transparent 40%)`; }});
+window.initParticles = function(canvas, options){ if(!canvas) return; const ctx=canvas.getContext('2d'); canvas.width=canvas.offsetWidth; canvas.height=canvas.offsetHeight; const interactive = options.interactive !== false; const count = options.count || (interactive ? 55 : 18); let mx=-1000,my=-1000; const particles=Array.from({length:count},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-.5)*0.3,vy:(Math.random()-.5)*0.3,size:Math.random()*2.2+0.8,alpha:Math.random()*0.35+0.08})); if(interactive){ canvas.addEventListener('mousemove',(e)=>{ const r=canvas.getBoundingClientRect(); mx=e.clientX-r.left; my=e.clientY-r.top;}); canvas.addEventListener('mouseleave',()=>{ mx=-1000; my=-1000;}); } (function animate(){ ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p=>{ if(interactive){ const dx=p.x-mx, dy=p.y-my, dist=Math.sqrt(dx*dx+dy*dy)||1; if(dist<120){ const force=(120-dist)/120*2; p.vx += (dx/dist)*force*0.1; p.vy += (dy/dist)*force*0.1; } } p.vx*=0.98; p.vy*=0.98; p.x+=p.vx; p.y+=p.vy; if(p.x<0) p.x=canvas.width; if(p.x>canvas.width) p.x=0; if(p.y<0) p.y=canvas.height; if(p.y>canvas.height) p.y=0; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fillStyle=`rgba(0,255,65,${p.alpha})`; ctx.fill(); }); requestAnimationFrame(animate); })(); };
+document.querySelectorAll('.particle-canvas').forEach(c=>window.initParticles(c,{interactive:true,count:55}));
+document.querySelectorAll('.particle-canvas-ambient').forEach(c=>window.initParticles(c,{interactive:false,count:18}));
+animateSlide(document.querySelector('.slide.active'));
+</script>
+</body>
+</html>
